@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>States · Double Elimination Bracket</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiMxZDMwNTciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMxNjIyM2YiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0idXJsKCNnKSIvPjxwYXRoIGQ9Ik0gMjU2LjAgODguMCBMIDI5Ny4xIDE5OS40IEwgNDE1LjggMjA0LjEgTCAzMjIuNiAyNzcuNiBMIDM1NC43IDM5MS45IEwgMjU2LjAgMzI2LjAgTCAxNTcuMyAzOTEuOSBMIDE4OS40IDI3Ny42IEwgOTYuMiAyMDQuMSBMIDIxNC45IDE5OS40IFoiIGZpbGw9IiNlM2E3MmYiLz48L3N2Zz4="/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="alternate icon" href="favicon.ico" sizes="any"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="manifest" href="site.webmanifest"/>
+<meta name="theme-color" content="#16223f"/>
+<meta name="description" content="STATES — 12U double-elimination softball bracket. 50 teams. Tap a winner to advance them; long-press to lock."/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="States Bracket"/>
+<meta property="og:title" content="States · Double Elimination Bracket"/>
+<meta property="og:description" content="Interactive 50-team 12U softball double-elimination bracket."/>
+<meta property="og:type" content="website"/>
+<style>
+  :root{
+    --ink:#16223f; --ink-soft:#3a4a73;
+    --field:#f3f5fb; --paper:#ffffff;
+    --blue:#8da9db; --blue-d:#6f8fce; --blue-l:#dae3f3; --blue-l-b:#bcccec;
+    --line:#c4cfe6; --gold:#e3a72f; --gold-d:#c4881a; --gold-glow:rgba(227,167,47,.55);
+    --shadow:0 1px 2px rgba(22,34,63,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); background:var(--field); -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; height:100dvh; overflow:hidden;}
+  header{flex:none; z-index:30; background:linear-gradient(180deg,#16223f,#1d3057);
+    color:#fff; box-shadow:0 2px 14px rgba(16,26,52,.28);}
+  .bar{margin:0 auto; max-width:1500px; padding:10px 18px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
+  .brand{display:flex; align-items:baseline; gap:12px; min-width:0}
+  .brand .mark{font-weight:800; letter-spacing:.14em; font-size:24px; line-height:1;}
+  .brand .mark b{color:var(--gold)}
+  .brand input.title{background:transparent; border:none; color:#fff; font:inherit; font-weight:800;
+    letter-spacing:.14em; font-size:24px; text-transform:uppercase; width:auto; min-width:60px;
+    max-width:42vw; padding:2px 4px; border-radius:6px;}
+  .brand input.title:hover{background:rgba(255,255,255,.08)}
+  .brand input.title:focus{outline:2px solid var(--gold); background:rgba(255,255,255,.10)}
+  .brand .sub{font-size:11px; letter-spacing:.20em; text-transform:uppercase; color:#aebbdb; white-space:nowrap}
+  .spacer{flex:1 1 auto}
+  .tabs{display:flex; gap:4px; background:rgba(255,255,255,.08); padding:4px; border-radius:11px}
+  .tab{appearance:none; border:none; cursor:pointer; color:#c2cdec; background:transparent; font:inherit;
+    font-weight:600; font-size:13px; padding:7px 15px; border-radius:8px; letter-spacing:.02em; white-space:nowrap;
+    transition:background .15s,color .15s;}
+  .tab:hover{color:#fff}
+  .tab[aria-selected="true"]{background:var(--gold); color:#231a05; box-shadow:var(--shadow)}
+  .tab .n{opacity:.7; font-weight:700; margin-right:6px}
+  .tools{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .btn{appearance:none; cursor:pointer; font:inherit; font-size:13px; font-weight:600; color:#d7e0f6;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); padding:7px 11px; border-radius:9px;
+    display:inline-flex; align-items:center; gap:6px; transition:background .15s,border-color .15s,color .15s;}
+  .btn:hover{background:rgba(255,255,255,.15); color:#fff}
+  .strip{flex:none; margin:0 auto; max-width:1500px; width:100%; padding:7px 20px 5px; display:flex; align-items:center; gap:16px;}
+  .stage h2{margin:0; font-size:15px; letter-spacing:.01em}
+  .stage p{margin:1px 0 0; font-size:12px; color:var(--ink-soft)}
+  .tip{margin-left:auto; font-size:11.5px; color:var(--ink-soft); white-space:nowrap}
+  .tip b{color:var(--ink)}
+  .viewport{flex:1 1 auto; min-height:0; width:100%; overflow:auto; padding:8px 10px 12px;
+    touch-action:pan-x pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;}
+  .stagewrap{display:none}
+  .stagewrap.active{display:block}
+  .scaler{transform-origin:top left; transition:transform .10s ease}
+  .canvas{position:relative; background:var(--paper); border:1px solid var(--line); border-radius:14px;
+    box-shadow:0 6px 26px rgba(22,34,63,.08);}
+  .canvas svg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+  .canvas svg path{fill:none; stroke:var(--line); stroke-width:1.4}
+  .box{position:absolute; border-radius:5px; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center;
+    transition:outline-color .12s, box-shadow .12s, opacity .12s;}
+  .box.light{background:var(--blue-l); border:1px solid var(--blue-l-b)}
+  .box.dark{background:var(--blue); border:1px solid var(--blue-d)}
+  .txt{width:100%; text-align:center; padding:0 7px; font-weight:600; color:var(--ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.05; user-select:none;}
+  .box.dark .txt{color:#10204a; font-weight:700}
+  .box.teambox .txt{color:#8a1024; font-weight:700}
+  .box.phbox{background:#eef2fb; border-color:#cdd9ef}
+  .box.phbox .txt{color:#61729a; font-weight:600; font-style:italic}
+  .box.champ{border:1.5px solid var(--gold-d); background:#fff7e8}
+  .box.champ .txt{font-weight:800; color:#6a4a06}
+  .box.champ::after{content:"\01F3C6"; position:absolute; right:-24px; top:50%; transform:translateY(-50%); font-size:15px;}
+  .divline{position:absolute; top:0; width:2px; background:#d33; z-index:2; pointer-events:none; border-radius:1px;}
+  /* interactive states */
+  .box.clickable{cursor:pointer}
+  .box.clickable:hover{box-shadow:0 0 0 2px var(--blue-d), var(--shadow)}
+  .box.picked{outline:3px solid var(--gold); outline-offset:0; z-index:4}
+  .box.picked.locked{outline-color:var(--gold-d); box-shadow:0 0 11px var(--gold-glow), var(--shadow)}
+  .box.lost{opacity:.4}
+  .box.lost .txt{text-decoration:line-through; text-decoration-thickness:1px}
+  .badge{position:absolute; right:-9px; top:-9px; z-index:8; min-width:18px; height:18px; padding:0 2px;
+    border-radius:9px; background:var(--gold); color:#231a05; font:800 11px/18px ui-sans-serif,system-ui,sans-serif;
+    text-align:center; display:none; box-shadow:0 1px 3px rgba(0,0,0,.35); pointer-events:none;}
+  .box.picked .badge{display:block}
+  .box.locked .badge{background:var(--gold-d); color:#fff}
+  @keyframes pls{0%{outline-color:#d33}60%{outline-color:#d33}100%{outline-color:var(--gold-d)}}
+  .box.pulse{outline:3px solid #d33; animation:pls .5s ease}
+  .gamecirc{position:absolute; z-index:6; pointer-events:auto; cursor:pointer; transform:translate(-50%,-50%);
+    width:28px; height:28px; border-radius:50%; background:#7f879c; border:2px solid #fff;
+    box-shadow:0 1px 4px rgba(22,34,63,.45); color:#fff; font:800 14px ui-sans-serif,system-ui,sans-serif;
+    display:flex; align-items:center; justify-content:center; letter-spacing:-.02em;
+    transition:transform .08s, background .12s;}
+  .gamecirc:hover{background:var(--gold-d); transform:translate(-50%,-50%) scale(1.12)}
+  /* game-detail popup */
+  .gpop{position:fixed; z-index:100; display:none; min-width:170px; max-width:240px;
+    background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 34px rgba(16,26,52,.28);
+    padding:11px 13px 12px; font-size:13px; color:var(--ink);}
+  .gpop-h{font-weight:800; font-size:14px; letter-spacing:.02em; margin-bottom:7px; padding-bottom:7px;
+    border-bottom:1px solid var(--line); color:#16223f;}
+  .gpop-h .cc{display:inline-flex; align-items:center; justify-content:center; width:22px;height:22px;border-radius:50%;
+    background:#7f879c; color:#fff; font-size:11px; font-weight:800; margin-right:8px; vertical-align:middle;}
+  .gpop-r{display:flex; justify-content:space-between; gap:14px; padding:3px 0;}
+  .gpop-r span{color:var(--ink-soft); font-weight:600}
+  .gpop-r b{font-weight:700; text-align:right}
+  .gpop-r b.tbd{color:#9aa7c4; font-weight:600; font-style:italic}
+  .gpop-teams{margin-top:6px; padding-top:7px; border-top:1px solid var(--line); font-size:12.5px}
+  .gpop-teams .vs{display:flex; align-items:center; gap:8px; justify-content:space-between}
+  .gpop-teams .t{font-weight:700; color:var(--ink)}
+  .gpop-teams .t.tbd{color:#9aa7c4; font-weight:600; font-style:italic}
+  .gpop-teams .mid{color:#9aa7c4; font-size:11px; font-weight:700}
+  .gpop::before{content:""; position:absolute; top:-7px; left:var(--ax,50%); transform:translateX(-50%);
+    border:7px solid transparent; border-top:0; border-bottom-color:#fff; filter:drop-shadow(0 -1px 0 var(--line));}
+  .gpop.below::before{top:auto; bottom:-7px; border-bottom:0; border-top-color:#fff; filter:drop-shadow(0 1px 0 var(--line));}
+  /* custom confirm modal (native confirm() is blocked in some viewers) */
+  .confirmov{position:fixed; inset:0; z-index:300; display:none; align-items:center; justify-content:center;
+    background:rgba(16,26,52,.55); padding:22px;}
+  .confirmov.show{display:flex}
+  .confirmbox{background:#fff; border-radius:14px; box-shadow:0 18px 50px rgba(16,26,52,.42); max-width:340px; width:100%;
+    padding:20px 20px 16px;}
+  .confirmbox h3{margin:0 0 8px; font-size:16px; color:var(--ink);}
+  .confirmbox p{margin:0 0 18px; font-size:13.5px; color:var(--ink-soft); line-height:1.45;}
+  .confirmbox .crow{display:flex; gap:10px; justify-content:flex-end;}
+  .confirmbox button{appearance:none; border:none; cursor:pointer; font:inherit; font-weight:700; font-size:14px;
+    padding:9px 17px; border-radius:9px;}
+  .cbtn-cancel{background:#eef1f8; color:var(--ink);}
+  .cbtn-cancel:hover{background:#e3e8f4}
+  .cbtn-reset{background:#d33; color:#fff;}
+  .cbtn-reset:hover{background:#c22}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand">
+      <span class="mark"><b>&#9733;</b></span>
+      <input class="title" id="ttl" value="STATES" spellcheck="false" aria-label="Tournament title"/>
+      <span class="sub">Double Elimination</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-s="1" aria-selected="true"><span class="n">01</span>Winners</button>
+      <button class="tab" role="tab" data-s="2" aria-selected="false"><span class="n">02</span>Losers</button>
+    </div>
+    <div class="tools">
+      <button class="btn" id="clear" title="Clear all picks except locked games">&#8635; Reset</button>
+    </div>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="stage">
+    <h2 id="stageName">Winners Bracket</h2>
+    <p id="stageSub">50 teams &rarr; champion</p>
+  </div>
+  <div class="tip">Tap the <b>winner</b> to advance &middot; long&#8209;press to <b>lock</b> &middot; tap a <b>game&nbsp;#</b> for details</div>
+</div>
+
+<div class="viewport" id="viewport"></div>
+<div class="gpop" id="gpop"></div>
+<div class="confirmov" id="confirmov">
+  <div class="confirmbox">
+    <h3>Reset bracket?</h3>
+    <p id="confirmmsg"></p>
+    <div class="crow">
+      <button class="cbtn-cancel" id="cbCancel">Cancel</button>
+      <button class="cbtn-reset" id="cbReset">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script id="bracket-data" type="application/json">{"pxpi":158,"slides":{"1":{"boxes":[{"id":98,"x":7.38,"y":5.889,"w":0.92,"h":0.185,"dark":true,"col":6,"content":"W95","full":"Winner of Game 95","leaf":false,"champ":true,"child":-1,"parents":[96,97],"game":95,"gd":"Sun 7/5","gt":"11:30AM","gl":"Harvard Park - F2","lbl":"7-1"},{"id":97,"x":6.18,"y":8.834,"w":0.92,"h":0.185,"dark":true,"col":5,"content":"W90","full":"Winner of Game 90","leaf":false,"champ":false,"child":98,"parents":[94,95],"game":90,"gd":"Sat 7/4","gt":"6:30PM","gl":"Harvard Park","lbl":"6-2"},{"id":95,"x":4.98,"y":10.34,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W80","full":"Winner of Game 80","leaf":false,"champ":false,"child":97,"parents":[90,91],"game":80,"gd":"Sat 7/4","gt":"4:45PM","gl":"Harvard Park - F6","lbl":"5-4"},{"id":91,"x":3.78,"y":11.089,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W60","full":"Winner of Game 60","leaf":false,"champ":false,"child":95,"parents":[81,83],"game":60,"gd":"Fri 7/3","gt":"4:45PM","gl":"Harvard Park - F5","lbl":"4-8"},{"id":83,"x":2.58,"y":11.441,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W34","full":"Winner of Game 34","leaf":false,"champ":false,"child":91,"parents":[82,53],"game":34,"gd":"Fri 7/3","gt":"3:00PM","gl":"Harvard Park - F6","lbl":"3-16"},{"id":53,"x":1.38,"y":11.617,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W18","full":"Winner of Game 18","leaf":false,"champ":false,"child":83,"parents":[51,52],"game":18,"gd":"Fri 7/3","gt":"11:30AM","gl":"Harvard Park - F3","lbl":"2-32"},{"id":52,"x":0.18,"y":11.735,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Vista","full":"Vista","leaf":true,"champ":false,"child":53,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-36"},{"id":51,"x":0.18,"y":11.5,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Peninsula Slvr","full":"Peninsula Slvr","leaf":true,"champ":false,"child":53,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-35"},{"id":82,"x":1.38,"y":11.265,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Sierra Madre","full":"Sierra Madre","leaf":true,"champ":false,"child":83,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-31"},{"id":81,"x":2.58,"y":10.736,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W33","full":"Winner of Game 33","leaf":false,"champ":false,"child":91,"parents":[80,50],"game":33,"gd":"Fri 7/3","gt":"3:00PM","gl":"Harvard Park - F5","lbl":"3-15"},{"id":50,"x":1.38,"y":10.912,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W17","full":"Winner of Game 17","leaf":false,"champ":false,"child":81,"parents":[48,49],"game":17,"gd":"Fri 7/3","gt":"11:30AM","gl":"Harvard Park - F4","lbl":"2-30"},{"id":49,"x":0.18,"y":11.03,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Tustin Slv","full":"Tustin Slv","leaf":true,"champ":false,"child":50,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-34"},{"id":48,"x":0.18,"y":10.795,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Poway Gold","full":"Poway Gold","leaf":true,"champ":false,"child":50,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-33"},{"id":80,"x":1.38,"y":10.56,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Beach Bombers","full":"Beach Bombers","leaf":true,"champ":false,"child":81,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-29"},{"id":90,"x":3.78,"y":9.591,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W59","full":"Winner of Game 59","leaf":false,"champ":false,"child":95,"parents":[78,79],"game":59,"gd":"Fri 7/3","gt":"4:45PM","gl":"Harvard Park - F3","lbl":"4-7"},{"id":79,"x":2.58,"y":9.972,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W32","full":"Winner of Game 32","leaf":false,"champ":false,"child":90,"parents":[44,47],"game":32,"gd":"Fri 7/3","gt":"3:00PM","gl":"Harvard Park - F3","lbl":"3-14"},{"id":47,"x":1.38,"y":10.207,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W16","full":"Winner of Game 16","leaf":false,"champ":false,"child":79,"parents":[45,46],"game":16,"gd":"Fri 7/3","gt":"11:30AM","gl":"Harvard Park - F2","lbl":"2-28"},{"id":46,"x":0.18,"y":10.325,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"NMGS","full":"NMGS","leaf":true,"champ":false,"child":47,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-32"},{"id":45,"x":0.18,"y":10.09,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Imperial Valley","full":"Imperial Valley","leaf":true,"champ":false,"child":47,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-31"},{"id":44,"x":1.38,"y":9.737,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W15","full":"Winner of Game 15","leaf":false,"champ":false,"child":79,"parents":[42,43],"game":15,"gd":"Fri 7/3","gt":"11:30AM","gl":"Harvard Park - F1","lbl":"2-27"},{"id":43,"x":0.18,"y":9.855,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"HBGS","full":"HBGS","leaf":true,"champ":false,"child":44,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-30"},{"id":42,"x":0.18,"y":9.62,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Carlsbad","full":"Carlsbad","leaf":true,"champ":false,"child":44,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-29"},{"id":78,"x":2.58,"y":9.209,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W31","full":"Winner of Game 31","leaf":false,"champ":false,"child":90,"parents":[41,77],"game":31,"gd":"Fri 7/3","gt":"3:00PM","gl":"Harvard Park - F4","lbl":"3-13"},{"id":77,"x":1.38,"y":9.385,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Corona","full":"Corona","leaf":true,"champ":false,"child":78,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-26"},{"id":41,"x":1.38,"y":9.033,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W14","full":"Winner of Game 14","leaf":false,"champ":false,"child":78,"parents":[39,40],"game":14,"gd":"Fri 7/3","gt":"9:45AM","gl":"Harvard Park - F7","lbl":"2-25"},{"id":40,"x":0.18,"y":9.15,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"East County","full":"East County","leaf":true,"champ":false,"child":41,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-28"},{"id":39,"x":0.18,"y":8.915,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"RT Gold","full":"RT Gold","leaf":true,"champ":false,"child":41,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-27"},{"id":94,"x":4.98,"y":7.329,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W79","full":"Winner of Game 79","leaf":false,"champ":false,"child":97,"parents":[88,89],"game":79,"gd":"Sat 7/4","gt":"4:45PM","gl":"Harvard Park - F2","lbl":"5-3"},{"id":89,"x":3.78,"y":8.034,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W58","full":"Winner of Game 58","leaf":false,"champ":false,"child":94,"parents":[74,76],"game":58,"gd":"Fri 7/3","gt":"4:45PM","gl":"Harvard Park","lbl":"4-6"},{"id":76,"x":2.58,"y":8.386,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W30","full":"Winner of Game 30","leaf":false,"champ":false,"child":89,"parents":[75,38],"game":30,"gd":"Fri 7/3","gt":"3:00PM","gl":"Harvard Park - F2","lbl":"3-12"},{"id":38,"x":1.38,"y":8.562,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W13","full":"Winner of Game 13","leaf":false,"champ":false,"child":76,"parents":[36,37],"game":13,"gd":"Fri 7/3","gt":"9:45AM","gl":"Harvard Park - F6","lbl":"2-24"},{"id":37,"x":0.18,"y":8.68,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"MVGS","full":"MVGS","leaf":true,"champ":false,"child":38,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-26"},{"id":36,"x":0.18,"y":8.445,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Santee","full":"Santee","leaf":true,"champ":false,"child":38,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-25"},{"id":75,"x":1.38,"y":8.21,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Rialto","full":"Rialto","leaf":true,"champ":false,"child":76,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-23"},{"id":74,"x":2.58,"y":7.681,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W29","full":"Winner of Game 29","leaf":false,"champ":false,"child":89,"parents":[73,35],"game":29,"gd":"Fri 7/3","gt":"3:00PM","gl":"Harvard Park - F1","lbl":"3-11"},{"id":35,"x":1.38,"y":7.857,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W12","full":"Winner of Game 12","leaf":false,"champ":false,"child":74,"parents":[33,34],"game":12,"gd":"Fri 7/3","gt":"9:45AM","gl":"Harvard Park - F5","lbl":"2-22"},{"id":34,"x":0.18,"y":7.975,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"La Puente","full":"La Puente","leaf":true,"champ":false,"child":35,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-24"},{"id":33,"x":0.18,"y":7.74,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Imperial Beach","full":"Imperial Beach","leaf":true,"champ":false,"child":35,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-23"},{"id":73,"x":1.38,"y":7.505,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Seaside","full":"Seaside","leaf":true,"champ":false,"child":74,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-21"},{"id":88,"x":3.78,"y":6.624,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W57","full":"Winner of Game 57","leaf":false,"champ":false,"child":94,"parents":[70,72],"game":57,"gd":"Fri 7/3","gt":"4:45PM","gl":"Harvard Park","lbl":"4-5"},{"id":72,"x":2.58,"y":6.976,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W28","full":"Winner of Game 28","leaf":false,"champ":false,"child":88,"parents":[71,32],"game":28,"gd":"Fri 7/3","gt":"1:15PM","gl":"Harvard Park - F7","lbl":"3-10"},{"id":32,"x":1.38,"y":7.152,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W11","full":"Winner of Game 11","leaf":false,"champ":false,"child":72,"parents":[30,31],"game":11,"gd":"Fri 7/3","gt":"9:45AM","gl":"Harvard Park - F3","lbl":"2-20"},{"id":31,"x":0.18,"y":7.27,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Scripps Ranch","full":"Scripps Ranch","leaf":true,"champ":false,"child":32,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-22"},{"id":30,"x":0.18,"y":7.035,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"FHS","full":"FHS","leaf":true,"champ":false,"child":32,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-21"},{"id":71,"x":1.38,"y":6.8,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"PYL Gld","full":"PYL Gld","leaf":true,"champ":false,"child":72,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-19"},{"id":70,"x":2.58,"y":6.271,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W27","full":"Winner of Game 27","leaf":false,"champ":false,"child":88,"parents":[69,29],"game":27,"gd":"Fri 7/3","gt":"1:15PM","gl":"Harvard Park - F6","lbl":"3-9"},{"id":29,"x":1.38,"y":6.447,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W10","full":"Winner of Game 10","leaf":false,"champ":false,"child":70,"parents":[27,28],"game":10,"gd":"Fri 7/3","gt":"9:45AM","gl":"Harvard Park - F4","lbl":"2-18"},{"id":28,"x":0.18,"y":6.565,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"ESO Fury","full":"ESO Fury","leaf":true,"champ":false,"child":29,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-20"},{"id":27,"x":0.18,"y":6.33,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"PYL Slv","full":"PYL Slv","leaf":true,"champ":false,"child":29,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-19"},{"id":69,"x":1.38,"y":6.095,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Santa Monica","full":"Santa Monica","leaf":true,"champ":false,"child":70,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-17"},{"id":96,"x":6.18,"y":2.945,"w":0.92,"h":0.185,"dark":true,"col":5,"content":"W89","full":"Winner of Game 89","leaf":false,"champ":false,"child":98,"parents":[92,93],"game":89,"gd":"Sat 7/4","gt":"6:30PM","gl":"Harvard Park","lbl":"6-1"},{"id":93,"x":4.98,"y":4.435,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W78","full":"Winner of Game 78","leaf":false,"champ":false,"child":96,"parents":[86,87],"game":78,"gd":"Sat 7/4","gt":"3:00PM","gl":"Harvard Park","lbl":"5-2"},{"id":87,"x":3.78,"y":5.214,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W56","full":"Winner of Game 56","leaf":false,"champ":false,"child":93,"parents":[66,68],"game":56,"gd":"Fri 7/3","gt":"4:45PM","gl":"Harvard Park","lbl":"4-4"},{"id":68,"x":2.58,"y":5.566,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W26","full":"Winner of Game 26","leaf":false,"champ":false,"child":87,"parents":[67,26],"game":26,"gd":"Fri 7/3","gt":"1:15PM","gl":"Harvard Park - F5","lbl":"3-8"},{"id":26,"x":1.38,"y":5.742,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W9","full":"Winner of Game 9","leaf":false,"champ":false,"child":68,"parents":[24,25],"game":9,"gd":"Fri 7/3","gt":"9:45AM","gl":"Harvard Park - F2","lbl":"2-16"},{"id":25,"x":0.18,"y":5.86,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"San Dimas","full":"San Dimas","leaf":true,"champ":false,"child":26,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-18"},{"id":24,"x":0.18,"y":5.625,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"WVGS Heat","full":"WVGS Heat","leaf":true,"champ":false,"child":26,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-17"},{"id":67,"x":1.38,"y":5.39,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"CAPO","full":"CAPO","leaf":true,"champ":false,"child":68,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-15"},{"id":66,"x":2.58,"y":4.861,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W25","full":"Winner of Game 25","leaf":false,"champ":false,"child":87,"parents":[65,23],"game":25,"gd":"Fri 7/3","gt":"1:15PM","gl":"Harvard Park - F3","lbl":"3-7"},{"id":23,"x":1.38,"y":5.037,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W8","full":"Winner of Game 8","leaf":false,"champ":false,"child":66,"parents":[21,22],"game":8,"gd":"Fri 7/3","gt":"9:45AM","gl":"Harvard Park - F1","lbl":"2-14"},{"id":22,"x":0.18,"y":5.155,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Redondo Sunset","full":"Redondo Sunset","leaf":true,"champ":false,"child":23,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-16"},{"id":21,"x":0.18,"y":4.92,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"La Ca\u00f1ada","full":"La Ca\u00f1ada","leaf":true,"champ":false,"child":23,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-15"},{"id":65,"x":1.38,"y":4.685,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Northridge","full":"Northridge","leaf":true,"champ":false,"child":66,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-13"},{"id":86,"x":3.78,"y":3.657,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W55","full":"Winner of Game 55","leaf":false,"champ":false,"child":93,"parents":[63,64],"game":55,"gd":"Fri 7/3","gt":"4:45PM","gl":"Harvard Park","lbl":"4-3"},{"id":64,"x":2.58,"y":4.098,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W24","full":"Winner of Game 24","leaf":false,"champ":false,"child":86,"parents":[17,20],"game":24,"gd":"Fri 7/3","gt":"1:15PM","gl":"Harvard Park - F4","lbl":"3-6"},{"id":20,"x":1.38,"y":4.332,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W7","full":"Winner of Game 7","leaf":false,"champ":false,"child":64,"parents":[18,19],"game":7,"gd":"Fri 7/3","gt":"8:00AM","gl":"Harvard Park - F7","lbl":"2-12"},{"id":19,"x":0.18,"y":4.45,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"SVGS","full":"SVGS","leaf":true,"champ":false,"child":20,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-14"},{"id":18,"x":0.18,"y":4.215,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"AVGS","full":"AVGS","leaf":true,"champ":false,"child":20,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-13"},{"id":17,"x":1.38,"y":3.863,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W6","full":"Winner of Game 6","leaf":false,"champ":false,"child":64,"parents":[15,16],"game":6,"gd":"Fri 7/3","gt":"8:00AM","gl":"Harvard Park - F6","lbl":"2-11"},{"id":16,"x":0.18,"y":3.98,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Tustin Gld","full":"Tustin Gld","leaf":true,"champ":false,"child":17,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-12"},{"id":15,"x":0.18,"y":3.745,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Camarillo","full":"Camarillo","leaf":true,"champ":false,"child":17,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-11"},{"id":63,"x":2.58,"y":3.216,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W23","full":"Winner of Game 23","leaf":false,"champ":false,"child":86,"parents":[62,14],"game":23,"gd":"Fri 7/3","gt":"1:15PM","gl":"Harvard Park - F2","lbl":"3-5"},{"id":14,"x":1.38,"y":3.393,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W5","full":"Winner of Game 5","leaf":false,"champ":false,"child":63,"parents":[12,13],"game":5,"gd":"Fri 7/3","gt":"8:00AM","gl":"Harvard Park - F5","lbl":"2-10"},{"id":13,"x":0.18,"y":3.51,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"WAGS","full":"WAGS","leaf":true,"champ":false,"child":14,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-10"},{"id":12,"x":0.18,"y":3.275,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"North Shore","full":"North Shore","leaf":true,"champ":false,"child":14,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-9"},{"id":62,"x":1.38,"y":3.04,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"RT Silver","full":"RT Silver","leaf":true,"champ":false,"child":63,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-9"},{"id":92,"x":4.98,"y":1.454,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W77","full":"Winner of Game 77","leaf":false,"champ":false,"child":96,"parents":[84,85],"game":77,"gd":"Sat 7/4","gt":"3:00PM","gl":"Harvard Park","lbl":"5-1"},{"id":85,"x":3.78,"y":2.159,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W54","full":"Winner of Game 54","leaf":false,"champ":false,"child":92,"parents":[59,61],"game":54,"gd":"Fri 7/3","gt":"4:45PM","gl":"Harvard Park","lbl":"4-2"},{"id":61,"x":2.58,"y":2.511,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W22","full":"Winner of Game 22","leaf":false,"champ":false,"child":85,"parents":[60,11],"game":22,"gd":"Fri 7/3","gt":"1:15PM","gl":"Harvard Park - F1","lbl":"3-4"},{"id":11,"x":1.38,"y":2.688,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W4","full":"Winner of Game 4","leaf":false,"champ":false,"child":61,"parents":[9,10],"game":4,"gd":"Fri 7/3","gt":"8:00AM","gl":"Harvard Park - F3","lbl":"2-8"},{"id":10,"x":0.18,"y":2.805,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"The Ranch","full":"The Ranch","leaf":true,"champ":false,"child":11,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-8"},{"id":9,"x":0.18,"y":2.57,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Yucaipa","full":"Yucaipa","leaf":true,"champ":false,"child":11,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-7"},{"id":60,"x":1.38,"y":2.335,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Peninsula Gold","full":"Peninsula Gold","leaf":true,"champ":false,"child":61,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-7"},{"id":59,"x":2.58,"y":1.806,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W21","full":"Winner of Game 21","leaf":false,"champ":false,"child":85,"parents":[58,8],"game":21,"gd":"Fri 7/3","gt":"11:30AM","gl":"Harvard Park - F7","lbl":"3-3"},{"id":8,"x":1.38,"y":1.982,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W3","full":"Winner of Game 3","leaf":false,"champ":false,"child":59,"parents":[6,7],"game":3,"gd":"Fri 7/3","gt":"8:00AM","gl":"Harvard Park - F4","lbl":"2-6"},{"id":7,"x":0.18,"y":2.1,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Murrieta","full":"Murrieta","leaf":true,"champ":false,"child":8,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-6"},{"id":6,"x":0.18,"y":1.865,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"La Habra","full":"La Habra","leaf":true,"champ":false,"child":8,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-5"},{"id":58,"x":1.38,"y":1.63,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"San Marcos","full":"San Marcos","leaf":true,"champ":false,"child":59,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-5"},{"id":84,"x":3.78,"y":0.749,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W53","full":"Winner of Game 53","leaf":false,"champ":false,"child":92,"parents":[55,57],"game":53,"gd":"Fri 7/3","gt":"3:00PM","gl":"Harvard Park","lbl":"4-1"},{"id":57,"x":2.58,"y":1.101,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W20","full":"Winner of Game 20","leaf":false,"champ":false,"child":84,"parents":[56,5],"game":20,"gd":"Fri 7/3","gt":"11:30AM","gl":"Harvard Park - F6","lbl":"3-2"},{"id":5,"x":1.38,"y":1.277,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W2","full":"Winner of Game 2","leaf":false,"champ":false,"child":57,"parents":[3,4],"game":2,"gd":"Fri 7/3","gt":"8:00AM","gl":"Harvard Park - F2","lbl":"2-4"},{"id":4,"x":0.18,"y":1.395,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Torrance Slv","full":"Torrance Slv","leaf":true,"champ":false,"child":5,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-4"},{"id":3,"x":0.18,"y":1.16,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"OCGSA","full":"OCGSA","leaf":true,"champ":false,"child":5,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-3"},{"id":56,"x":1.38,"y":0.925,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Torrance Gld","full":"Torrance Gld","leaf":true,"champ":false,"child":57,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-3"},{"id":55,"x":2.58,"y":0.396,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W19","full":"Winner of Game 19","leaf":false,"champ":false,"child":84,"parents":[54,2],"game":19,"gd":"Fri 7/3","gt":"11:30AM","gl":"Harvard Park - F5","lbl":"3-1"},{"id":2,"x":1.38,"y":0.573,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W1","full":"Winner of Game 1","leaf":false,"champ":false,"child":55,"parents":[0,1],"game":1,"gd":"Fri 7/3","gt":"8:00AM","gl":"Harvard Park - F1","lbl":"2-2"},{"id":1,"x":0.18,"y":0.69,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Norco","full":"Norco","leaf":true,"champ":false,"child":2,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-2"},{"id":0,"x":0.18,"y":0.455,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"Poway Silver","full":"Poway Silver","leaf":true,"champ":false,"child":2,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-1"},{"id":54,"x":1.38,"y":0.22,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"Palos Verdes","full":"Palos Verdes","leaf":true,"champ":false,"child":55,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-1"}],"edges":[[96,98],[97,98],[94,97],[95,97],[90,95],[91,95],[81,91],[83,91],[82,83],[53,83],[51,53],[52,53],[80,81],[50,81],[48,50],[49,50],[78,90],[79,90],[44,79],[47,79],[45,47],[46,47],[42,44],[43,44],[41,78],[77,78],[39,41],[40,41],[88,94],[89,94],[74,89],[76,89],[75,76],[38,76],[36,38],[37,38],[73,74],[35,74],[33,35],[34,35],[70,88],[72,88],[71,72],[32,72],[30,32],[31,32],[69,70],[29,70],[27,29],[28,29],[92,96],[93,96],[86,93],[87,93],[66,87],[68,87],[67,68],[26,68],[24,26],[25,26],[65,66],[23,66],[21,23],[22,23],[63,86],[64,86],[17,64],[20,64],[18,20],[19,20],[15,17],[16,17],[62,63],[14,63],[12,14],[13,14],[84,92],[85,92],[59,85],[61,85],[60,61],[11,61],[9,11],[10,11],[58,59],[8,59],[6,8],[7,8],[55,84],[57,84],[56,57],[5,57],[3,5],[4,5],[54,55],[2,55],[0,2],[1,2]],"name":"Winners Bracket","sub":"States \u2014 12 Under","maxx":8.3,"maxy":11.92},"2":{"boxes":[{"id":197,"x":13.38,"y":1.333,"w":0.92,"h":0.185,"dark":true,"col":11,"content":"Champion","full":"Champion","leaf":false,"champ":true,"child":-1,"parents":[196,195],"game":98,"gd":"Sun 7/5","gt":"3:00PM","gl":"Harvard Park - F1","lbl":"12-1"},{"id":195,"x":12.18,"y":2.445,"w":0.92,"h":0.185,"dark":true,"col":10,"content":"W97","full":"Winner of Game 97","leaf":false,"champ":false,"child":197,"parents":[194,193],"game":97,"gd":"Sun 7/5","gt":"1:15PM","gl":"Harvard Park - F1","lbl":"11-2"},{"id":193,"x":10.98,"y":4.435,"w":0.92,"h":0.185,"dark":true,"col":9,"content":"W96","full":"Winner of Game 96","leaf":false,"champ":false,"child":195,"parents":[191,192],"game":96,"gd":"Sun 7/5","gt":"11:30AM","gl":"Harvard Park - F1","lbl":"10-2"},{"id":192,"x":9.78,"y":7.138,"w":0.92,"h":0.185,"dark":true,"col":8,"content":"W94","full":"Winner of Game 94","leaf":false,"champ":false,"child":193,"parents":[190,188],"game":94,"gd":"Sun 7/5","gt":"9:45AM","gl":"Harvard Park - F2","lbl":"9-2"},{"id":188,"x":8.58,"y":8.181,"w":0.92,"h":0.185,"dark":true,"col":7,"content":"W92","full":"Winner of Game 92","leaf":false,"champ":false,"child":192,"parents":[185,186],"game":92,"gd":"Sun 7/5","gt":"8:00AM","gl":"Harvard Park - F2","lbl":"8-4"},{"id":186,"x":7.38,"y":9.473,"w":0.92,"h":0.185,"dark":true,"col":6,"content":"W88","full":"Winner of Game 88","leaf":false,"champ":false,"child":188,"parents":[182,178],"game":88,"gd":"Sat 7/4","gt":"6:30PM","gl":"Harvard Park - F4","lbl":"7-4"},{"id":178,"x":6.18,"y":10.031,"w":0.92,"h":0.185,"dark":true,"col":5,"content":"W84","full":"Winner of Game 84","leaf":false,"champ":false,"child":186,"parents":[173,174],"game":84,"gd":"Sat 7/4","gt":"4:45PM","gl":"Harvard Park - F4","lbl":"6-8"},{"id":174,"x":4.98,"y":10.619,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W69","full":"Winner of Game 69","leaf":false,"champ":false,"child":178,"parents":[166,158],"game":69,"gd":"Sat 7/4","gt":"3:00PM","gl":"Harvard Park - F4","lbl":"5-8"},{"id":158,"x":3.78,"y":10.912,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W61","full":"Winner of Game 61","leaf":false,"champ":false,"child":174,"parents":[149,150],"game":61,"gd":"Sat 7/4","gt":"1:15PM","gl":"Harvard Park - F4","lbl":"4-16"},{"id":150,"x":2.58,"y":11.147,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W52","full":"Winner of Game 52","leaf":false,"champ":false,"child":158,"parents":[118,134],"game":52,"gd":"Sat 7/4","gt":"11:30AM","gl":"Harvard Park - F3","lbl":"3-16"},{"id":134,"x":1.38,"y":11.265,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L27","full":"Loser of Game 27","leaf":true,"champ":false,"child":150,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-32"},{"id":118,"x":1.38,"y":11.03,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L18","full":"Loser of Game 18","leaf":true,"champ":false,"child":150,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-31"},{"id":149,"x":2.58,"y":10.678,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W51","full":"Winner of Game 51","leaf":false,"champ":false,"child":158,"parents":[117,133],"game":51,"gd":"Sat 7/4","gt":"11:30AM","gl":"Harvard Park - F4","lbl":"3-15"},{"id":133,"x":1.38,"y":10.795,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L28","full":"Loser of Game 28","leaf":true,"champ":false,"child":149,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-30"},{"id":117,"x":1.38,"y":10.56,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L17","full":"Loser of Game 17","leaf":true,"champ":false,"child":149,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-29"},{"id":166,"x":3.78,"y":10.325,"w":0.92,"h":0.185,"dark":false,"col":3,"content":"L53","full":"Loser of Game 53","leaf":true,"champ":false,"child":174,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"4-15"},{"id":173,"x":4.98,"y":9.444,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W70","full":"Winner of Game 70","leaf":false,"champ":false,"child":178,"parents":[165,157],"game":70,"gd":"Sat 7/4","gt":"3:00PM","gl":"Harvard Park - F2","lbl":"5-7"},{"id":157,"x":3.78,"y":9.737,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W62","full":"Winner of Game 62","leaf":false,"champ":false,"child":173,"parents":[147,148],"game":62,"gd":"Sat 7/4","gt":"1:15PM","gl":"Harvard Park - F2","lbl":"4-14"},{"id":148,"x":2.58,"y":9.973,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W50","full":"Winner of Game 50","leaf":false,"champ":false,"child":157,"parents":[132,104],"game":50,"gd":"Sat 7/4","gt":"11:30AM","gl":"Harvard Park - F2","lbl":"3-14"},{"id":104,"x":1.38,"y":10.09,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W36","full":"Winner of Game 36","leaf":false,"champ":false,"child":148,"parents":[102,103],"game":36,"gd":"Sat 7/4","gt":"8:00AM","gl":"Harvard Park - F2","lbl":"2-28"},{"id":103,"x":0.18,"y":10.207,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"L16","full":"Loser of Game 16","leaf":true,"champ":false,"child":104,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-4"},{"id":102,"x":0.18,"y":9.973,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"L15","full":"Loser of Game 15","leaf":true,"champ":false,"child":104,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-3"},{"id":132,"x":1.38,"y":9.855,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L29","full":"Loser of Game 29","leaf":true,"champ":false,"child":148,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-27"},{"id":147,"x":2.58,"y":9.502,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W49","full":"Winner of Game 49","leaf":false,"champ":false,"child":157,"parents":[116,131],"game":49,"gd":"Sat 7/4","gt":"11:30AM","gl":"Harvard Park - F1","lbl":"3-13"},{"id":131,"x":1.38,"y":9.62,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L30","full":"Loser of Game 30","leaf":true,"champ":false,"child":147,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-26"},{"id":116,"x":1.38,"y":9.385,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L14","full":"Loser of Game 14","leaf":true,"champ":false,"child":147,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-25"},{"id":165,"x":3.78,"y":9.15,"w":0.92,"h":0.185,"dark":false,"col":3,"content":"L54","full":"Loser of Game 54","leaf":true,"champ":false,"child":173,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"4-13"},{"id":182,"x":6.18,"y":8.915,"w":0.92,"h":0.185,"dark":false,"col":5,"content":"L80","full":"Loser of Game 80","leaf":true,"champ":false,"child":186,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"6-7"},{"id":185,"x":7.38,"y":6.888,"w":0.92,"h":0.185,"dark":true,"col":6,"content":"W87","full":"Winner of Game 87","leaf":false,"champ":false,"child":188,"parents":[181,177],"game":87,"gd":"Sat 7/4","gt":"6:30PM","gl":"Harvard Park - F7","lbl":"7-3"},{"id":177,"x":6.18,"y":7.446,"w":0.92,"h":0.185,"dark":true,"col":5,"content":"W83","full":"Winner of Game 83","leaf":false,"champ":false,"child":185,"parents":[171,172],"game":83,"gd":"Sat 7/4","gt":"4:45PM","gl":"Harvard Park - F7","lbl":"6-6"},{"id":172,"x":4.98,"y":8.034,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W71","full":"Winner of Game 71","leaf":false,"champ":false,"child":177,"parents":[164,156],"game":71,"gd":"Sat 7/4","gt":"1:15PM","gl":"Harvard Park - F7","lbl":"5-6"},{"id":156,"x":3.78,"y":8.328,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W63","full":"Winner of Game 63","leaf":false,"champ":false,"child":172,"parents":[145,146],"game":63,"gd":"Sat 7/4","gt":"11:30AM","gl":"Harvard Park - F7","lbl":"4-12"},{"id":146,"x":2.58,"y":8.562,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W48","full":"Winner of Game 48","leaf":false,"champ":false,"child":156,"parents":[115,130],"game":48,"gd":"Sat 7/4","gt":"9:45AM","gl":"Harvard Park - F7","lbl":"3-12"},{"id":130,"x":1.38,"y":8.68,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L31","full":"Loser of Game 31","leaf":true,"champ":false,"child":146,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-24"},{"id":115,"x":1.38,"y":8.445,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L13","full":"Loser of Game 13","leaf":true,"champ":false,"child":146,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-23"},{"id":145,"x":2.58,"y":8.092,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W47","full":"Winner of Game 47","leaf":false,"champ":false,"child":156,"parents":[114,129],"game":47,"gd":"Sat 7/4","gt":"9:45AM","gl":"Harvard Park - F4","lbl":"3-11"},{"id":129,"x":1.38,"y":8.21,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L32","full":"Loser of Game 32","leaf":true,"champ":false,"child":145,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-22"},{"id":114,"x":1.38,"y":7.975,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L12","full":"Loser of Game 12","leaf":true,"champ":false,"child":145,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-21"},{"id":164,"x":3.78,"y":7.74,"w":0.92,"h":0.185,"dark":false,"col":3,"content":"L55","full":"Loser of Game 55","leaf":true,"champ":false,"child":172,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"4-11"},{"id":171,"x":4.98,"y":6.859,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W72","full":"Winner of Game 72","leaf":false,"champ":false,"child":177,"parents":[163,155],"game":72,"gd":"Sat 7/4","gt":"3:00PM","gl":"Harvard Park - F7","lbl":"5-5"},{"id":155,"x":3.78,"y":7.152,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W64","full":"Winner of Game 64","leaf":false,"champ":false,"child":171,"parents":[143,144],"game":64,"gd":"Sat 7/4","gt":"11:30AM","gl":"Harvard Park - F5","lbl":"4-10"},{"id":144,"x":2.58,"y":7.387,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W46","full":"Winner of Game 46","leaf":false,"champ":false,"child":155,"parents":[113,128],"game":46,"gd":"Sat 7/4","gt":"9:45AM","gl":"Harvard Park - F5","lbl":"3-10"},{"id":128,"x":1.38,"y":7.505,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L33","full":"Loser of Game 33","leaf":true,"champ":false,"child":144,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-20"},{"id":113,"x":1.38,"y":7.27,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L11","full":"Loser of Game 11","leaf":true,"champ":false,"child":144,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-19"},{"id":143,"x":2.58,"y":6.917,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W45","full":"Winner of Game 45","leaf":false,"champ":false,"child":155,"parents":[112,127],"game":45,"gd":"Sat 7/4","gt":"9:45AM","gl":"Harvard Park - F3","lbl":"3-9"},{"id":127,"x":1.38,"y":7.035,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L34","full":"Loser of Game 34","leaf":true,"champ":false,"child":143,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-18"},{"id":112,"x":1.38,"y":6.8,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L10","full":"Loser of Game 10","leaf":true,"champ":false,"child":143,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-17"},{"id":163,"x":3.78,"y":6.565,"w":0.92,"h":0.185,"dark":false,"col":3,"content":"L56","full":"Loser of Game 56","leaf":true,"champ":false,"child":171,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"4-9"},{"id":181,"x":6.18,"y":6.33,"w":0.92,"h":0.185,"dark":false,"col":5,"content":"L79","full":"Loser of Game 79","leaf":true,"champ":false,"child":185,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"6-5"},{"id":190,"x":8.58,"y":6.095,"w":0.92,"h":0.185,"dark":false,"col":7,"content":"L89","full":"Loser of Game 89","leaf":true,"champ":false,"child":192,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"8-3"},{"id":191,"x":9.78,"y":1.733,"w":0.92,"h":0.185,"dark":true,"col":8,"content":"W93","full":"Winner of Game 93","leaf":false,"champ":false,"child":193,"parents":[189,187],"game":93,"gd":"Sun 7/5","gt":"9:45AM","gl":"Harvard Park - F1","lbl":"9-1"},{"id":187,"x":8.58,"y":2.776,"w":0.92,"h":0.185,"dark":true,"col":7,"content":"W91","full":"Winner of Game 91","leaf":false,"champ":false,"child":191,"parents":[183,184],"game":91,"gd":"Sun 7/5","gt":"8:00AM","gl":"Harvard Park - F1","lbl":"8-2"},{"id":184,"x":7.38,"y":4.068,"w":0.92,"h":0.185,"dark":true,"col":6,"content":"W86","full":"Winner of Game 86","leaf":false,"champ":false,"child":187,"parents":[180,176],"game":86,"gd":"Sat 7/4","gt":"6:30PM","gl":"Harvard Park - F1","lbl":"7-2"},{"id":176,"x":6.18,"y":4.626,"w":0.92,"h":0.185,"dark":true,"col":5,"content":"W82","full":"Winner of Game 82","leaf":false,"champ":false,"child":184,"parents":[169,170],"game":82,"gd":"Sat 7/4","gt":"4:45PM","gl":"Harvard Park - F1","lbl":"6-4"},{"id":170,"x":4.98,"y":5.214,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W73","full":"Winner of Game 73","leaf":false,"champ":false,"child":176,"parents":[162,154],"game":73,"gd":"Sat 7/4","gt":"1:15PM","gl":"Harvard Park - F6","lbl":"5-4"},{"id":154,"x":3.78,"y":5.507,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W65","full":"Winner of Game 65","leaf":false,"champ":false,"child":170,"parents":[141,142],"game":65,"gd":"Sat 7/4","gt":"11:30AM","gl":"Harvard Park - F6","lbl":"4-8"},{"id":142,"x":2.58,"y":5.742,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W44","full":"Winner of Game 44","leaf":false,"champ":false,"child":154,"parents":[111,126],"game":44,"gd":"Sat 7/4","gt":"9:45AM","gl":"Harvard Park - F6","lbl":"3-8"},{"id":126,"x":1.38,"y":5.86,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L19","full":"Loser of Game 19","leaf":true,"champ":false,"child":142,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-16"},{"id":111,"x":1.38,"y":5.625,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L9","full":"Loser of Game 9","leaf":true,"champ":false,"child":142,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-15"},{"id":141,"x":2.58,"y":5.272,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W43","full":"Winner of Game 43","leaf":false,"champ":false,"child":154,"parents":[110,125],"game":43,"gd":"Sat 7/4","gt":"9:45AM","gl":"Harvard Park - F2","lbl":"3-7"},{"id":125,"x":1.38,"y":5.39,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L20","full":"Loser of Game 20","leaf":true,"champ":false,"child":141,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-14"},{"id":110,"x":1.38,"y":5.155,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L8","full":"Loser of Game 8","leaf":true,"champ":false,"child":141,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-13"},{"id":162,"x":3.78,"y":4.92,"w":0.92,"h":0.185,"dark":false,"col":3,"content":"L57","full":"Loser of Game 57","leaf":true,"champ":false,"child":170,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"4-7"},{"id":169,"x":4.98,"y":4.039,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W74","full":"Winner of Game 74","leaf":false,"champ":false,"child":176,"parents":[161,153],"game":74,"gd":"Sat 7/4","gt":"3:00PM","gl":"Harvard Park - F1","lbl":"5-3"},{"id":153,"x":3.78,"y":4.332,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W66","full":"Winner of Game 66","leaf":false,"champ":false,"child":169,"parents":[139,140],"game":66,"gd":"Sat 7/4","gt":"1:15PM","gl":"Harvard Park - F1","lbl":"4-6"},{"id":140,"x":2.58,"y":4.567,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W42","full":"Winner of Game 42","leaf":false,"champ":false,"child":153,"parents":[124,101],"game":42,"gd":"Sat 7/4","gt":"9:45AM","gl":"Harvard Park - F1","lbl":"3-6"},{"id":101,"x":1.38,"y":4.685,"w":0.92,"h":0.185,"dark":true,"col":1,"content":"W35","full":"Winner of Game 35","leaf":false,"champ":false,"child":140,"parents":[99,100],"game":35,"gd":"Sat 7/4","gt":"8:00AM","gl":"Harvard Park - F1","lbl":"2-12"},{"id":100,"x":0.18,"y":4.802,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"L7","full":"Loser of Game 7","leaf":true,"champ":false,"child":101,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-2"},{"id":99,"x":0.18,"y":4.567,"w":0.92,"h":0.185,"dark":false,"col":0,"content":"L6","full":"Loser of Game 6","leaf":true,"champ":false,"child":101,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"1-1"},{"id":124,"x":1.38,"y":4.45,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L21","full":"Loser of Game 21","leaf":true,"champ":false,"child":140,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-11"},{"id":139,"x":2.58,"y":4.097,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W41","full":"Winner of Game 41","leaf":false,"champ":false,"child":153,"parents":[109,123],"game":41,"gd":"Sat 7/4","gt":"8:00AM","gl":"Harvard Park - F7","lbl":"3-5"},{"id":123,"x":1.38,"y":4.215,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L22","full":"Loser of Game 22","leaf":true,"champ":false,"child":139,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-10"},{"id":109,"x":1.38,"y":3.98,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L5","full":"Loser of Game 5","leaf":true,"champ":false,"child":139,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-9"},{"id":161,"x":3.78,"y":3.745,"w":0.92,"h":0.185,"dark":false,"col":3,"content":"L58","full":"Loser of Game 58","leaf":true,"champ":false,"child":169,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"4-5"},{"id":180,"x":6.18,"y":3.51,"w":0.92,"h":0.185,"dark":false,"col":5,"content":"L78","full":"Loser of Game 78","leaf":true,"champ":false,"child":184,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"6-3"},{"id":183,"x":7.38,"y":1.483,"w":0.92,"h":0.185,"dark":true,"col":6,"content":"W85","full":"Winner of Game 85","leaf":false,"champ":false,"child":187,"parents":[179,175],"game":85,"gd":"Sat 7/4","gt":"6:30PM","gl":"Harvard Park - F3","lbl":"7-1"},{"id":175,"x":6.18,"y":2.041,"w":0.92,"h":0.185,"dark":true,"col":5,"content":"W81","full":"Winner of Game 81","leaf":false,"champ":false,"child":183,"parents":[167,168],"game":81,"gd":"Sat 7/4","gt":"4:45PM","gl":"Harvard Park - F3","lbl":"6-2"},{"id":168,"x":4.98,"y":2.629,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W75","full":"Winner of Game 75","leaf":false,"champ":false,"child":175,"parents":[160,152],"game":75,"gd":"Sat 7/4","gt":"3:00PM","gl":"Harvard Park - F3","lbl":"5-2"},{"id":152,"x":3.78,"y":2.922,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W67","full":"Winner of Game 67","leaf":false,"champ":false,"child":168,"parents":[137,138],"game":67,"gd":"Sat 7/4","gt":"1:15PM","gl":"Harvard Park - F3","lbl":"4-4"},{"id":138,"x":2.58,"y":3.158,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W40","full":"Winner of Game 40","leaf":false,"champ":false,"child":152,"parents":[108,122],"game":40,"gd":"Sat 7/4","gt":"8:00AM","gl":"Harvard Park - F6","lbl":"3-4"},{"id":122,"x":1.38,"y":3.275,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L23","full":"Loser of Game 23","leaf":true,"champ":false,"child":138,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-8"},{"id":108,"x":1.38,"y":3.04,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L4","full":"Loser of Game 4","leaf":true,"champ":false,"child":138,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-7"},{"id":137,"x":2.58,"y":2.688,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W39","full":"Winner of Game 39","leaf":false,"champ":false,"child":152,"parents":[107,121],"game":39,"gd":"Sat 7/4","gt":"8:00AM","gl":"Harvard Park - F5","lbl":"3-3"},{"id":121,"x":1.38,"y":2.805,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L24","full":"Loser of Game 24","leaf":true,"champ":false,"child":137,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-6"},{"id":107,"x":1.38,"y":2.57,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L3","full":"Loser of Game 3","leaf":true,"champ":false,"child":137,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-5"},{"id":160,"x":3.78,"y":2.335,"w":0.92,"h":0.185,"dark":false,"col":3,"content":"L59","full":"Loser of Game 59","leaf":true,"champ":false,"child":168,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"4-3"},{"id":167,"x":4.98,"y":1.454,"w":0.92,"h":0.185,"dark":true,"col":4,"content":"W76","full":"Winner of Game 76","leaf":false,"champ":false,"child":175,"parents":[159,151],"game":76,"gd":"Sat 7/4","gt":"3:00PM","gl":"Harvard Park - F5","lbl":"5-1"},{"id":151,"x":3.78,"y":1.747,"w":0.92,"h":0.185,"dark":true,"col":3,"content":"W68","full":"Winner of Game 68","leaf":false,"champ":false,"child":167,"parents":[135,136],"game":68,"gd":"Sat 7/4","gt":"1:15PM","gl":"Harvard Park - F5","lbl":"4-2"},{"id":136,"x":2.58,"y":1.982,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W38","full":"Winner of Game 38","leaf":false,"champ":false,"child":151,"parents":[106,120],"game":38,"gd":"Sat 7/4","gt":"8:00AM","gl":"Harvard Park - F3","lbl":"3-2"},{"id":120,"x":1.38,"y":2.1,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L25","full":"Loser of Game 25","leaf":true,"champ":false,"child":136,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-4"},{"id":106,"x":1.38,"y":1.865,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L2","full":"Loser of Game 2","leaf":true,"champ":false,"child":136,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-3"},{"id":135,"x":2.58,"y":1.512,"w":0.92,"h":0.185,"dark":true,"col":2,"content":"W37","full":"Winner of Game 37","leaf":false,"champ":false,"child":151,"parents":[105,119],"game":37,"gd":"Sat 7/4","gt":"8:00AM","gl":"Harvard Park - F4","lbl":"3-1"},{"id":119,"x":1.38,"y":1.63,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L26","full":"Loser of Game 26","leaf":true,"champ":false,"child":135,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-2"},{"id":105,"x":1.38,"y":1.395,"w":0.92,"h":0.185,"dark":false,"col":1,"content":"L1","full":"Loser of Game 1","leaf":true,"champ":false,"child":135,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"2-1"},{"id":159,"x":3.78,"y":1.16,"w":0.92,"h":0.185,"dark":false,"col":3,"content":"L60","full":"Loser of Game 60","leaf":true,"champ":false,"child":167,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"4-1"},{"id":179,"x":6.18,"y":0.925,"w":0.92,"h":0.185,"dark":false,"col":5,"content":"L77","full":"Loser of Game 77","leaf":true,"champ":false,"child":183,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"6-1"},{"id":189,"x":8.58,"y":0.69,"w":0.92,"h":0.185,"dark":false,"col":7,"content":"L90","full":"Loser of Game 90","leaf":true,"champ":false,"child":191,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"8-1"},{"id":194,"x":10.98,"y":0.455,"w":0.92,"h":0.185,"dark":false,"col":9,"content":"L95","full":"Loser of Game 95","leaf":true,"champ":false,"child":195,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"10-1"},{"id":196,"x":12.18,"y":0.22,"w":0.92,"h":0.185,"dark":false,"col":10,"content":"W95","full":"Winner of Game 95","leaf":true,"champ":false,"child":197,"parents":[],"game":null,"gd":"","gt":"","gl":"","lbl":"11-1"}],"edges":[[196,197],[195,197],[194,195],[193,195],[191,193],[192,193],[190,192],[188,192],[185,188],[186,188],[182,186],[178,186],[173,178],[174,178],[166,174],[158,174],[149,158],[150,158],[118,150],[134,150],[117,149],[133,149],[165,173],[157,173],[147,157],[148,157],[132,148],[104,148],[102,104],[103,104],[116,147],[131,147],[181,185],[177,185],[171,177],[172,177],[164,172],[156,172],[145,156],[146,156],[115,146],[130,146],[114,145],[129,145],[163,171],[155,171],[143,155],[144,155],[113,144],[128,144],[112,143],[127,143],[189,191],[187,191],[183,187],[184,187],[180,184],[176,184],[169,176],[170,176],[162,170],[154,170],[141,154],[142,154],[111,142],[126,142],[110,141],[125,141],[161,169],[153,169],[139,153],[140,153],[124,140],[101,140],[99,101],[100,101],[109,139],[123,139],[179,183],[175,183],[167,175],[168,175],[160,168],[152,168],[137,152],[138,152],[108,138],[122,138],[107,137],[121,137],[159,167],[151,167],[135,151],[136,151],[106,136],[120,136],[105,135],[119,135]],"name":"Losers Bracket","sub":"States \u2014 12 Under","maxx":14.3,"maxy":11.45}},"title":"States \u2014 12 Under","baked":true}</script>
+<script>
+(function(){
+  "use strict";
+  var DATA=JSON.parse(document.getElementById('bracket-data').textContent);
+  var PXPI=DATA.pxpi, PAD=14, STATE_KEY='states_bracket_v4';
+  var title=(DATA.baked&&DATA.title)?DATA.title:'STATES', zoom=0.45;
+  var canvasDims={};
+  function gid(s,id){return s+'-'+id;}
+
+  /* ===== global indexes across both slides ===== */
+  var byGidData={};                 // gid -> data box
+  var gameObj={};                   // gameNumber -> {s, gid, parents:[gid,gid]}
+  ['1','2'].forEach(function(s){
+    var boxes=DATA.slides[s].boxes, byid={};
+    boxes.forEach(function(b){ byid[b.id]=b; byGidData[gid(s,b.id)]=b; });
+    boxes.forEach(function(b){
+      if(b.game){ gameObj[b.game]={s:s, gid:gid(s,b.id),
+        parents:(b.parents||[]).map(function(pid){return gid(s,pid);})}; }
+    });
+  });
+
+  /* ===== state ===== */
+  var pick={}, lock={};
+  function loadState(){ try{ var r=localStorage.getItem(STATE_KEY); if(!r) return; var o=JSON.parse(r);
+    if(o.t) title=o.t;
+    if(o.p && typeof o.p==='object'){ Object.keys(o.p).forEach(function(g){ pick[g]=o.p[g]; }); }
+    if(o.l && o.l.length){ o.l.forEach(function(g){ lock[g]=true; }); }
+  }catch(e){} }
+  loadState();
+  function persist(){ try{ localStorage.setItem(STATE_KEY, JSON.stringify({
+    t:title, p:pick, l:Object.keys(lock).filter(function(g){return lock[g];})
+  })); }catch(e){} }
+
+  /* ===== resolver (functional; memoised per render) ===== */
+  var memoT, memoW, PH=/^([WL])(\d+)$/;
+  function winnerTeam(G){ if(memoW.hasOwnProperty(G)) return memoW[G];
+    memoW[G]=null; var g=gameObj[G]; var p=g?pick[G]:null;
+    var r = p ? teamOf(p) : null; memoW[G]=r; return r; }
+  function loserTeam(G){ var g=gameObj[G]; var p=g?pick[G]:null; if(!p) return null;
+    var other = g.parents[0]===p ? g.parents[1] : g.parents[0]; return teamOf(other); }
+  function teamOf(gd){ if(memoT.hasOwnProperty(gd)) return memoT[gd];
+    memoT[gd]=null; var b=byGidData[gd]; var r=null;
+    if(b){ if(b.leaf){ var m=PH.exec(b.content||'');
+        if(m){ r = m[1]==='W' ? winnerTeam(+m[2]) : loserTeam(+m[2]); }
+        else { r = b.content||null; } }
+      else if(b.game){ r=winnerTeam(b.game); } }
+    memoT[gd]=r; return r; }
+
+  var viewport=document.getElementById('viewport');
+  var gpop=document.getElementById('gpop');
+  var META=[];                      // per interactive/display box
+
+  function buildSlide(s){
+    var sd=DATA.slides[s];
+    var W=Math.round(sd.maxx*PXPI)+PAD*2+8, H=Math.round(sd.maxy*PXPI)+PAD*2+8;
+    canvasDims[s]={w:W,h:H};
+    var byid={}; sd.boxes.forEach(function(b){ byid[b.id]=b; });
+
+    var wrap=document.createElement('div');
+    wrap.className='stagewrap'+(s==='1'?' active':''); wrap.dataset.s=s;
+    var scaler=document.createElement('div'); scaler.className='scaler';
+    var canvas=document.createElement('div'); canvas.className='canvas';
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+
+    var NS='http://www.w3.org/2000/svg';
+    var svg=document.createElementNS(NS,'svg'); svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    sd.edges.forEach(function(e){
+      var p=byid[e[0]], c=byid[e[1]]; if(!p||!c) return;
+      var px=PAD+(p.x+p.w)*PXPI, py=PAD+(p.y+p.h/2)*PXPI;
+      var cx=PAD+c.x*PXPI, cy=PAD+(c.y+c.h/2)*PXPI, mx=(px+cx)/2;
+      var path=document.createElementNS(NS,'path');
+      path.setAttribute('d','M '+px+' '+py+' H '+mx+' V '+cy+' H '+cx);
+      svg.appendChild(path);
+    });
+    canvas.appendChild(svg);
+
+    sd.boxes.forEach(function(b){
+      var id=gid(s,b.id);
+      var box=document.createElement('div');
+      var cls='box '+(b.dark?'dark':'light'); if(b.champ) cls+=' champ';
+      box.className=cls;
+      box.style.left=(PAD+b.x*PXPI)+'px'; box.style.top=(PAD+b.y*PXPI)+'px';
+      box.style.width=(b.w*PXPI)+'px'; box.style.height=(b.h*PXPI)+'px';
+      var fs=Math.max(10.5, Math.min(13.5, b.h*PXPI*0.48));
+
+      var txt=document.createElement('div'); txt.className='txt';
+      txt.style.fontSize=fs.toFixed(1)+'px';
+      box.appendChild(txt);
+      var badge=document.createElement('span'); badge.className='badge'; box.appendChild(badge);
+
+      // game circle (info popup)
+      if(b.game){
+        var pr=byid[b.parents[0]];
+        var jx=PAD+((pr.x+pr.w) + (b.x-(pr.x+pr.w))*0.42)*PXPI, jy=PAD+(b.y+b.h/2)*PXPI;
+        var gc=document.createElement('div'); gc.className='gamecirc';
+        gc.style.left=jx+'px'; gc.style.top=jy+'px'; gc.textContent=b.game;
+        gc.dataset.g=b.game; gc.dataset.gd=b.gd||''; gc.dataset.gt=b.gt||''; gc.dataset.gl=b.gl||'';
+        gc.addEventListener('click',function(ev){ ev.stopPropagation(); openPop(gc); });
+        canvas.appendChild(gc);
+      }
+
+      // advance target = game that this box feeds into (child game)
+      var cb = (b.child>=0) ? byid[b.child] : null;
+      var ag = (cb && cb.game) ? cb.game : 0;
+      var isPh = PH.test(b.content||'');
+      var m={ s:s, gid:id, el:box, txt:txt, badge:badge, b:b,
+              leaf:!!b.leaf, dark:!!b.dark, champ:!!b.champ, isPh:isPh, ag:ag };
+      META.push(m);
+      if(ag){ attachPress(box, m); }
+
+      canvas.appendChild(box);
+    });
+    var DIVG={'1':60,'2':84}[s];
+    if(DIVG){
+      var gL=null; for(var qi=0;qi<sd.boxes.length;qi++){ if(sd.boxes[qi].game===DIVG){ gL=sd.boxes[qi]; break; } }
+      if(gL){
+        var prL=byid[gL.parents[0]];
+        var circL=PAD+((prL.x+prL.w)+(gL.x-(prL.x+prL.w))*0.42)*PXPI;
+        var blL=PAD+gL.x*PXPI;
+        var vl=document.createElement('div'); vl.className='divline';
+        vl.style.left=((circL+14+blL)/2)+'px'; vl.style.height=H+'px';
+        canvas.appendChild(vl);
+      }
+    }
+    scaler.appendChild(canvas); wrap.appendChild(scaler); viewport.appendChild(wrap);
+  }
+
+  /* ===== press handling (tap = pick winner, long-press = lock) ===== */
+  var lastTouch=0;
+  function attachPress(el,m){
+    var timer=null, sx=0, sy=0, moved=false, longed=false;
+    function begin(x,y){ sx=x; sy=y; moved=false; longed=false;
+      timer=setTimeout(function(){ longed=true; timer=null; doPress(m,'long'); },480); }
+    function movchk(x,y){ if(timer && (Math.abs(x-sx)>8||Math.abs(y-sy)>8)){ clearTimeout(timer); timer=null; moved=true; } }
+    function finish(){ if(timer){ clearTimeout(timer); timer=null; } if(!moved && !longed){ doPress(m,'tap'); } }
+    el.addEventListener('touchstart',function(e){ var t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
+    el.addEventListener('touchmove',function(e){ var t=e.touches[0]; movchk(t.clientX,t.clientY); },{passive:true});
+    el.addEventListener('touchend',function(e){ lastTouch=Date.now(); finish(); });
+    el.addEventListener('touchcancel',function(){ if(timer){clearTimeout(timer);timer=null;} });
+    el.addEventListener('mousedown',function(e){ if(e.button!==0) return;
+      if(Date.now()-lastTouch<600) return;          // ignore synthetic mouse after touch
+      begin(e.clientX,e.clientY);
+      var mm=function(ev){ movchk(ev.clientX,ev.clientY); };
+      var mu=function(ev){ document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu); finish(); };
+      document.addEventListener('mousemove',mm); document.addEventListener('mouseup',mu);
+    });
+  }
+  function doPress(m,kind){
+    var G=m.ag; if(!G) return;
+    if(teamOf(m.gid)==null) return;                 // this slot isn't decided yet
+    if(kind==='long'){
+      if(pick[G]===m.gid && lock[G]){ delete lock[G]; }
+      else { pick[G]=m.gid; lock[G]=true; }
+      if(navigator.vibrate){ try{navigator.vibrate(18);}catch(e){} }
+    } else {
+      if(lock[G]){ pulse(m.el); return; }            // locked: taps ignored
+      if(pick[G]===m.gid){ delete pick[G]; }         // tap the current winner again -> revert
+      else { pick[G]=m.gid; }
+    }
+    persist(); applyState();
+  }
+  function pulse(el){ el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');
+    setTimeout(function(){ el.classList.remove('pulse'); },520); }
+
+  /* ===== render current state onto boxes ===== */
+  function applyState(){
+    memoT={}; memoW={};
+    for(var i=0;i<META.length;i++){
+      var m=META[i], resolved=teamOf(m.gid);
+      var disp = (resolved!=null) ? resolved : (m.b.content||'');
+      if(m.txt.textContent!==disp) m.txt.textContent=disp;
+      m.txt.title = (resolved!=null) ? resolved : (m.b.full||disp||'');
+      var el=m.el;
+      // placeholder vs filled styling for light leaf slots
+      if(!m.champ && m.leaf){
+        if(resolved!=null){ el.classList.remove('phbox'); if(!m.dark) el.classList.add('teambox'); }
+        else if(m.isPh){ el.classList.add('phbox'); el.classList.remove('teambox'); }
+      }
+      el.classList.remove('picked','lost','locked');
+      m.badge.textContent='';
+      if(m.ag){
+        var p=pick[m.ag];
+        if(p){
+          if(p===m.gid){ el.classList.add('picked');
+            if(lock[m.ag]){ el.classList.add('locked'); m.badge.textContent='\uD83D\uDD12'; }
+            else { m.badge.textContent='\u2713'; } }
+          else { el.classList.add('lost'); }
+        }
+        el.classList.toggle('clickable', resolved!=null);
+      }
+    }
+  }
+
+  /* ===== reset (keep locked games + their inputs) ===== */
+  function keepSet(){
+    var keep={};
+    function anc(G){ if(keep[G]) return; keep[G]=1; var g=gameObj[G]; if(!g) return;
+      g.parents.forEach(function(pg){ var b=byGidData[pg]; if(!b) return;
+        if(b.game){ anc(b.game); }
+        else if(b.leaf){ var mm=PH.exec(b.content||''); if(mm) anc(+mm[2]); } }); }
+    Object.keys(lock).forEach(function(G){ if(lock[G]) anc(+G); });
+    return keep;
+  }
+  function doReset(){
+    var keep=keepSet();
+    Object.keys(pick).forEach(function(G){ if(!keep[G]) delete pick[G]; });
+    closePop(); persist(); applyState();
+  }
+  var confirmov=document.getElementById('confirmov'), confirmmsg=document.getElementById('confirmmsg');
+  document.getElementById('clear').onclick=function(ev){
+    ev.stopPropagation();
+    if(!Object.keys(pick).length){ return; }
+    var nLock=Object.keys(lock).filter(function(g){return lock[g];}).length;
+    confirmmsg.textContent = nLock
+      ? ('This clears all your winner picks. '+nLock+' locked game'+(nLock>1?'s':'')+' will be kept.')
+      : 'This clears all your winner picks and returns the bracket to the start.';
+    confirmov.classList.add('show');
+  };
+  document.getElementById('cbCancel').onclick=function(ev){ ev.stopPropagation(); confirmov.classList.remove('show'); };
+  document.getElementById('cbReset').onclick=function(ev){ ev.stopPropagation(); confirmov.classList.remove('show'); doReset(); };
+  confirmov.addEventListener('click',function(e){ if(e.target===confirmov) confirmov.classList.remove('show'); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') confirmov.classList.remove('show'); });
+
+  /* ===== game-detail popup ===== */
+  function row(label,val){ var tbd=!val;
+    return '<div class="gpop-r"><span>'+label+'</span><b'+(tbd?' class="tbd"':'')+'>'+(val||'TBD')+'</b></div>'; }
+  function teamRow(G){
+    var g=gameObj[G]; if(!g) return '';
+    var a=teamOf(g.parents[0]), b=teamOf(g.parents[1]);
+    function cell(t){ return t!=null ? '<span class="t">'+esc(t)+'</span>' : '<span class="t tbd">TBD</span>'; }
+    return '<div class="gpop-teams"><div class="vs">'+cell(a)+'<span class="mid">vs</span>'+cell(b)+'</div></div>';
+  }
+  function esc(s){ return (''+s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+  function openPop(gc){
+    var g=gc.dataset.g, gd=gc.dataset.gd, gt=gc.dataset.gt, gl=gc.dataset.gl;
+    memoT={}; memoW={};
+    gpop.innerHTML='<div class="gpop-h"><span class="cc">'+g+'</span>Game '+g+'</div>'
+      + row('Date',gd) + row('Time',gt) + row('Field',gl) + teamRow(+g);
+    gpop.style.display='block'; gpop.classList.remove('below');
+    var r=gc.getBoundingClientRect();
+    var pw=gpop.offsetWidth, ph=gpop.offsetHeight;
+    var cx=r.left+r.width/2;
+    var left=cx-pw/2, top=r.bottom+10;
+    if(top+ph>window.innerHeight-8){ top=r.top-ph-10; gpop.classList.add('below'); }
+    left=Math.max(8, Math.min(window.innerWidth-pw-8, left));
+    gpop.style.left=left+'px'; gpop.style.top=top+'px';
+    gpop.style.setProperty('--ax',(cx-left)+'px');
+  }
+  function closePop(){ gpop.style.display='none'; }
+  document.addEventListener('click',closePop);
+  gpop.addEventListener('click',function(e){ e.stopPropagation(); });
+  viewport.addEventListener('scroll',closePop);
+  window.addEventListener('resize',closePop);
+
+  /* ===== tabs ===== */
+  var tabs=document.getElementById('tabs');
+  var stageName=document.getElementById('stageName'), stageSub=document.getElementById('stageSub');
+  var currentStage='1';
+  function selectStage(s){
+    currentStage=s; closePop();
+    tabs.querySelectorAll('.tab').forEach(function(t){ t.setAttribute('aria-selected', t.dataset.s===s?'true':'false'); });
+    viewport.querySelectorAll('.stagewrap').forEach(function(w){ w.classList.toggle('active', w.dataset.s===s); });
+    stageName.textContent=DATA.slides[s].name; stageSub.innerHTML=DATA.slides[s].sub||'';
+    viewport.scrollTo({left:0,top:0}); applyScale();
+  }
+  tabs.addEventListener('click',function(e){ var t=e.target.closest('.tab'); if(t) selectStage(t.dataset.s); });
+
+  /* ===== fixed scale (zoom locked at 45%; scroll/pan only) ===== */
+  function applyScale(){
+    viewport.querySelectorAll('.stagewrap').forEach(function(w){
+      var s=w.dataset.s, d=canvasDims[s], sc=w.querySelector('.scaler');
+      sc.style.transition='none';
+      sc.style.transform='scale('+zoom+')'; sc.style.width=(d.w*zoom)+'px'; sc.style.height=(d.h*zoom)+'px';
+    });
+  }
+  // desktop convenience: translate vertical wheel to horizontal when there's no vertical room (still just scrolling)
+  viewport.addEventListener('wheel',function(e){
+    var canV=viewport.scrollHeight-viewport.clientHeight>1;
+    var canH=viewport.scrollWidth-viewport.clientWidth>1;
+    if(!e.shiftKey && canH && !canV){ viewport.scrollLeft+=e.deltaY; e.preventDefault(); }
+  },{passive:false});
+
+  /* ===== title ===== */
+  var ttl=document.getElementById('ttl'); ttl.value=title;
+  ttl.addEventListener('input',function(){ title=ttl.value; persist(); });
+
+  ['1','2'].forEach(buildSlide);
+  applyState();
+  applyScale();
+})();
+</script>
+</body>
+</html>
