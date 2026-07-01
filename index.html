@@ -61,15 +61,17 @@
   .stage p{margin:1px 0 0; font-size:12px; color:var(--ink-soft)}
   .tip{margin-left:auto; font-size:11.5px; color:var(--ink-soft); white-space:nowrap}
   .tip b{color:var(--ink)}
-  .viewport{flex:1 1 auto; min-height:0; width:100%; overflow:auto; padding:8px 10px 12px;
-    touch-action:pan-x pan-y; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;}
+  .viewport{flex:1 1 auto; min-height:0; width:100%; overflow:hidden; padding:0;
+    touch-action:none; overscroll-behavior:contain;}
   .stagewrap{display:none}
   .stagewrap.active{display:block}
-  .scaler{transform-origin:top left; transition:transform .10s ease}
+  .scaler{transform-origin:0 0; transition:none; will-change:transform;}
   .canvas{position:relative; background:var(--paper); border:1px solid var(--line); border-radius:14px;
     box-shadow:0 6px 26px rgba(22,34,63,.08);}
   .canvas svg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
   .canvas svg path{fill:none; stroke:var(--line); stroke-width:1.4}
+  .canvas, .canvas *{ -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none;
+    -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; touch-action:none; }
   .box{position:absolute; border-radius:5px; box-shadow:var(--shadow); display:flex; align-items:center; justify-content:center;
     transition:outline-color .12s, box-shadow .12s, opacity .12s;}
   .box.light{background:var(--blue-l); border:1px solid var(--blue-l-b)}
@@ -80,6 +82,7 @@
   .box.teambox .txt{color:#8a1024; font-weight:700}
   .box.phbox{background:#eef2fb; border-color:#cdd9ef}
   .box.phbox .txt{color:#61729a; font-weight:600; font-style:italic}
+  .box.named .txt{color:#8a1024 !important; font-weight:700; font-style:normal}
   .box.champ{border:1.5px solid var(--gold-d); background:#fff7e8}
   .box.champ .txt{font-weight:800; color:#6a4a06}
   .box.champ::after{content:"\01F3C6"; position:absolute; right:-24px; top:50%; transform:translateY(-50%); font-size:15px;}
@@ -144,29 +147,16 @@
 <body>
 <header>
   <div class="bar">
-    <div class="brand">
-      <span class="mark"><b>&#9733;</b></span>
-      <input class="title" id="ttl" value="STATES" spellcheck="false" aria-label="Tournament title"/>
-      <span class="sub">Double Elimination</span>
-    </div>
-    <div class="spacer"></div>
     <div class="tabs" role="tablist" id="tabs">
       <button class="tab" role="tab" data-s="1" aria-selected="true"><span class="n">01</span>Winners</button>
       <button class="tab" role="tab" data-s="2" aria-selected="false"><span class="n">02</span>Losers</button>
     </div>
+    <div class="spacer"></div>
     <div class="tools">
       <button class="btn" id="clear" title="Clear all picks except locked games">&#8635; Reset</button>
     </div>
   </div>
 </header>
-
-<div class="strip">
-  <div class="stage">
-    <h2 id="stageName">Winners Bracket</h2>
-    <p id="stageSub">50 teams &rarr; champion</p>
-  </div>
-  <div class="tip">Tap the <b>winner</b> to advance &middot; long&#8209;press to <b>lock</b> &middot; tap a <b>game&nbsp;#</b> for details</div>
-</div>
 
 <div class="viewport" id="viewport"></div>
 <div class="gpop" id="gpop"></div>
@@ -187,7 +177,7 @@
   "use strict";
   var DATA=JSON.parse(document.getElementById('bracket-data').textContent);
   var PXPI=DATA.pxpi, PAD=14, STATE_KEY='states_bracket_v4';
-  var title=(DATA.baked&&DATA.title)?DATA.title:'STATES', zoom=0.45;
+  var title=(DATA.baked&&DATA.title)?DATA.title:'STATES';
   var canvasDims={};
   function gid(s,id){return s+'-'+id;}
 
@@ -317,8 +307,8 @@
       timer=setTimeout(function(){ longed=true; timer=null; doPress(m,'long'); },480); }
     function movchk(x,y){ if(timer && (Math.abs(x-sx)>8||Math.abs(y-sy)>8)){ clearTimeout(timer); timer=null; moved=true; } }
     function finish(){ if(timer){ clearTimeout(timer); timer=null; } if(!moved && !longed){ doPress(m,'tap'); } }
-    el.addEventListener('touchstart',function(e){ var t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
-    el.addEventListener('touchmove',function(e){ var t=e.touches[0]; movchk(t.clientX,t.clientY); },{passive:true});
+    el.addEventListener('touchstart',function(e){ if(e.touches.length>1){ if(timer){clearTimeout(timer);timer=null;} moved=true; return; } var t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
+    el.addEventListener('touchmove',function(e){ if(e.touches.length>1){ if(timer){clearTimeout(timer);timer=null;} moved=true; return; } var t=e.touches[0]; movchk(t.clientX,t.clientY); },{passive:true});
     el.addEventListener('touchend',function(e){ lastTouch=Date.now(); finish(); });
     el.addEventListener('touchcancel',function(){ if(timer){clearTimeout(timer);timer=null;} });
     el.addEventListener('mousedown',function(e){ if(e.button!==0) return;
@@ -355,11 +345,9 @@
       if(m.txt.textContent!==disp) m.txt.textContent=disp;
       m.txt.title = (resolved!=null) ? resolved : (m.b.full||disp||'');
       var el=m.el;
-      // placeholder vs filled styling for light leaf slots
-      if(!m.champ && m.leaf){
-        if(resolved!=null){ el.classList.remove('phbox'); if(!m.dark) el.classList.add('teambox'); }
-        else if(m.isPh){ el.classList.add('phbox'); el.classList.remove('teambox'); }
-      }
+      // any box currently showing a real team name -> red 'named' font; placeholders keep their look
+      if(resolved!=null){ el.classList.add('named'); el.classList.remove('phbox'); }
+      else { el.classList.remove('named'); if(m.isPh && !m.dark && !m.champ){ el.classList.add('phbox'); } }
       el.classList.remove('picked','lost','locked');
       m.badge.textContent='';
       if(m.ag){
@@ -438,39 +426,88 @@
 
   /* ===== tabs ===== */
   var tabs=document.getElementById('tabs');
-  var stageName=document.getElementById('stageName'), stageSub=document.getElementById('stageSub');
   var currentStage='1';
   function selectStage(s){
     currentStage=s; closePop();
     tabs.querySelectorAll('.tab').forEach(function(t){ t.setAttribute('aria-selected', t.dataset.s===s?'true':'false'); });
     viewport.querySelectorAll('.stagewrap').forEach(function(w){ w.classList.toggle('active', w.dataset.s===s); });
-    stageName.textContent=DATA.slides[s].name; stageSub.innerHTML=DATA.slides[s].sub||'';
-    viewport.scrollTo({left:0,top:0}); applyScale();
+    resetView();
   }
   tabs.addEventListener('click',function(e){ var t=e.target.closest('.tab'); if(t) selectStage(t.dataset.s); });
 
-  /* ===== fixed scale (zoom locked at 45%; scroll/pan only) ===== */
-  function applyScale(){
-    viewport.querySelectorAll('.stagewrap').forEach(function(w){
-      var s=w.dataset.s, d=canvasDims[s], sc=w.querySelector('.scaler');
-      sc.style.transition='none';
-      sc.style.transform='scale('+zoom+')'; sc.style.width=(d.w*zoom)+'px'; sc.style.height=(d.h*zoom)+'px';
-    });
+  /* ===== transform-based pan + pinch-zoom (single GPU transform = no jitter) ===== */
+  var MINZ=0.12, MAXZ=4, DEFZ=0.45, zoom=DEFZ, panX=0, panY=0;
+  function minZoom(){ var d=canvasDims[currentStage]; return d ? Math.min(MAXZ, viewport.clientHeight/d.h) : MINZ; }
+  function clampZ(z){ return Math.max(minZoom(), Math.min(MAXZ, z)); }
+  function activeScaler(){ var w=viewport.querySelector('.stagewrap.active'); return w?w.querySelector('.scaler'):null; }
+  function clampPan(){
+    var d=canvasDims[currentStage]; if(!d) return;
+    var vw=viewport.clientWidth, vh=viewport.clientHeight, cw=d.w*zoom, ch=d.h*zoom, M=40;
+    var loX=Math.min(0,vw-cw)-M, hiX=Math.max(0,vw-cw)+M;
+    var loY=Math.min(0,vh-ch)-M, hiY=Math.max(0,vh-ch)+M;
+    panX=Math.max(loX,Math.min(hiX,panX)); panY=Math.max(loY,Math.min(hiY,panY));
   }
-  // desktop convenience: translate vertical wheel to horizontal when there's no vertical room (still just scrolling)
-  viewport.addEventListener('wheel',function(e){
-    var canV=viewport.scrollHeight-viewport.clientHeight>1;
-    var canH=viewport.scrollWidth-viewport.clientWidth>1;
-    if(!e.shiftKey && canH && !canV){ viewport.scrollLeft+=e.deltaY; e.preventDefault(); }
-  },{passive:false});
+  function applyTransform(){
+    clampPan(); var sc=activeScaler();
+    if(sc) sc.style.transform='translate('+panX.toFixed(2)+'px,'+panY.toFixed(2)+'px) scale('+zoom+')';
+  }
+  function resetView(){ zoom=clampZ(DEFZ); panX=0; panY=0; applyTransform(); }
 
-  /* ===== title ===== */
-  var ttl=document.getElementById('ttl'); ttl.value=title;
-  ttl.addEventListener('input',function(){ title=ttl.value; persist(); });
+  (function(){
+    var mode=null, lastX=0, lastY=0, pD0=0, pZ0=1, pCx=0, pCy=0;
+    function vpR(){ return viewport.getBoundingClientRect(); }
+    function midCanvas(a,b,r){ return {fx:(a.clientX+b.clientX)/2-r.left, fy:(a.clientY+b.clientY)/2-r.top}; }
+    viewport.addEventListener('touchstart',function(e){
+      closePop();
+      if(e.touches.length===1){ mode='pan'; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; }
+      else if(e.touches.length>=2){
+        var r=vpR(),a=e.touches[0],b=e.touches[1], m=midCanvas(a,b,r);
+        pD0=Math.hypot(b.clientX-a.clientX,b.clientY-a.clientY)||1;
+        pZ0=zoom; pCx=(m.fx-panX)/zoom; pCy=(m.fy-panY)/zoom;   // canvas point under the pinch center
+        mode='pinch'; e.preventDefault();
+      }
+    },{passive:false});
+    viewport.addEventListener('touchmove',function(e){
+      if(mode==='pinch' && e.touches.length>=2){ e.preventDefault();
+        var r=vpR(),a=e.touches[0],b=e.touches[1], m=midCanvas(a,b,r);
+        var d=Math.hypot(b.clientX-a.clientX,b.clientY-a.clientY);
+        zoom=clampZ(pZ0*(d/pD0));
+        panX=m.fx-zoom*pCx; panY=m.fy-zoom*pCy;                 // keep that point under the fingers
+        applyTransform();
+      } else if(mode==='pan' && e.touches.length===1){
+        var t=e.touches[0], dx=t.clientX-lastX, dy=t.clientY-lastY;
+        if(dx||dy){ panX+=dx; panY+=dy; lastX=t.clientX; lastY=t.clientY; applyTransform(); e.preventDefault(); }
+      }
+    },{passive:false});
+    function endp(e){
+      if(!e.touches||e.touches.length===0){ mode=null; }
+      else if(e.touches.length===1){ mode='pan'; lastX=e.touches[0].clientX; lastY=e.touches[0].clientY; }
+    }
+    viewport.addEventListener('touchend',endp); viewport.addEventListener('touchcancel',endp);
+
+    // desktop: wheel/trackpad pans; Ctrl/Cmd + wheel zooms at the cursor
+    viewport.addEventListener('wheel',function(e){
+      e.preventDefault(); var r=vpR();
+      if(e.ctrlKey||e.metaKey){ closePop();
+        var fx=e.clientX-r.left, fy=e.clientY-r.top, cx=(fx-panX)/zoom, cy=(fy-panY)/zoom;
+        zoom=clampZ(zoom*(e.deltaY<0?1.10:0.909));
+        panX=fx-zoom*cx; panY=fy-zoom*cy; applyTransform();
+      } else { panX-=e.deltaX; panY-=e.deltaY; applyTransform(); }
+    },{passive:false});
+
+    // desktop: click-drag to pan (ignored right after touch, and for genuine taps)
+    var drag=false, dsx=0, dsy=0;
+    viewport.addEventListener('mousedown',function(e){ if(e.button!==0) return;
+      if(Date.now()-lastTouch<800) return; drag=true; dsx=e.clientX; dsy=e.clientY; });
+    window.addEventListener('mousemove',function(e){ if(!drag) return;
+      var dx=e.clientX-dsx, dy=e.clientY-dsy; if(dx||dy){ panX+=dx; panY+=dy; dsx=e.clientX; dsy=e.clientY; applyTransform(); } });
+    window.addEventListener('mouseup',function(){ drag=false; });
+    window.addEventListener('resize',function(){ zoom=clampZ(zoom); applyTransform(); });
+  })();
 
   ['1','2'].forEach(buildSlide);
   applyState();
-  applyScale();
+  resetView();
 })();
 </script>
 </body>
