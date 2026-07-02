@@ -440,10 +440,9 @@
   function activeScaler(){ var w=viewport.querySelector('.stagewrap.active'); return w?w.querySelector('.scaler'):null; }
   function clampPan(){
     var d=canvasDims[currentStage]; if(!d) return;
-    var vw=viewport.clientWidth, vh=viewport.clientHeight, cw=d.w*zoom, ch=d.h*zoom, M=40;
-    var loX=Math.min(0,vw-cw)-M, hiX=Math.max(0,vw-cw)+M;
-    var loY=Math.min(0,vh-ch)-M, hiY=Math.max(0,vh-ch)+M;
-    panX=Math.max(loX,Math.min(hiX,panX)); panY=Math.max(loY,Math.min(hiY,panY));
+    var vw=viewport.clientWidth, vh=viewport.clientHeight, cw=d.w*zoom, ch=d.h*zoom;
+    if(cw<=vw){ panX=(vw-cw)/2; } else { panX=Math.max(vw-cw, Math.min(0, panX)); }
+    if(ch<=vh){ panY=(vh-ch)/2; } else { panY=Math.max(vh-ch, Math.min(0, panY)); }
   }
   function applyTransform(){
     clampPan(); var sc=activeScaler();
